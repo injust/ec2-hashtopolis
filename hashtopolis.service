@@ -1,0 +1,14 @@
+[Unit]
+Description=Hashtopolis agent
+After=network.target
+
+[Service]
+RuntimeDirectory=hashtopolis
+WorkingDirectory=/run/hashtopolis
+ExecStartPre=curl $HASHTOPOLIS_SERVER/agents.php?download=1 -o hashtopolis.zip
+ExecStart=python3 hashtopolis.zip --voucher=$VOUCHER --url=$HASHTOPOLIS_SERVER/api/server.php
+ExecStopPost=python3 hashtopolis.zip --de-register
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

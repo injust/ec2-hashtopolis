@@ -1,0 +1,25 @@
+# https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2025-2/base-yum-dnf.html
+
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: DnfAddRepoStep
+        action: CreateFile
+        inputs:
+          - path: /etc/yum.repos.d/oneAPI.repo
+            content: |
+              [oneAPI]
+              name=Intel® oneAPI repository
+              baseurl=https://yum.repos.intel.com/oneapi
+              enabled=1
+              gpgcheck=1
+              repo_gpgcheck=1
+              gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+
+      - name: DnfInstallStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - dnf -y install intel-oneapi-runtime-opencl

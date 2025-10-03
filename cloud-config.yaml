@@ -1,0 +1,34 @@
+#cloud-config
+
+bootcmd:
+  # https://gist.github.com/fideloper/40f7807920aa1198fa07b9e69dc82b56
+  - |
+    EPHEMERAL_DISK=$(nvme list | awk '/Amazon EC2 NVMe Instance Storage/ { print $1 }')
+    mkfs.xfs $EPHEMERAL_DISK
+    mkdir /run/hashtopolis/
+    mount $EPHEMERAL_DISK /run/hashtopolis/
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/optimize_gpu.html
+  - |
+    nvidia-persistenced
+    nvidia-smi -ac 6250,1710  # G5 instances
+
+write_files:
+  - path: /etc/systemd/system/hashtopolis.service
+    content: |
+      [Unit]
+      Description=Hashtopolis agent
+      After=network.target
+
+      [Service]
+      WorkingDirectory=/run/hashtopolis
+      ExecStartPre=curl $HASHTOPOLIS_SERVER/agents.php?download=1 -o hashtopolis.zip
+      ExecStart=python3 hashtopolis.zip --voucher=$VOUCHER --url=$HASHTOPOLIS_SERVER/api/server.php
+      ExecStopPost=python3 hashtopolis.zip --de-register
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl enable --now hashtopolis.service
