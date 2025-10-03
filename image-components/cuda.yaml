@@ -1,0 +1,19 @@
+# https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/amazon-linux.html
+
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: DnfAddRepoStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - dnf config-manager --add-repo=https://developer.download.nvidia.com/compute/cuda/repos/amzn2023/x86_64/cuda-amzn2023.repo
+
+      - name: DnfInstallStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - dnf -y module enable nvidia-driver:latest-dkms
+            - dnf -y install cuda-cudart-13-0 cuda-nvrtc-devel-13-0 nvidia-driver-cuda
