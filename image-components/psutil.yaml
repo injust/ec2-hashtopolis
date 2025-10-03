@@ -1,0 +1,10 @@
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: DnfInstallStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - dnf -y install python3-psutil

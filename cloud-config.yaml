@@ -1,0 +1,31 @@
+#cloud-config
+
+bootcmd:
+  - |
+    EPHEMERAL_DISK=$(nvme list | awk '/Amazon EC2 NVMe Instance Storage/ { print $1 }')
+    mkfs.xfs $EPHEMERAL_DISK
+    mkdir /run/hashtopolis/
+    mount $EPHEMERAL_DISK /run/hashtopolis/
+
+write_files:
+  - path: /etc/systemd/system/hashtopolis.service
+    content: |
+      [Unit]
+      Description=Hashtopolis agent
+      After=network.target
+
+      [Service]
+      WorkingDirectory=/run/hashtopolis
+      ExecStartPre=curl https://example.com/agents.php?download=1 -o hashtopolis.zip
+      ExecStart=python3 hashtopolis.zip --voucher=VOUCHER --url=https://example.com/api/server.php
+      ExecStopPost=python3 hashtopolis.zip --de-register
+      Restart=always
+      RestartMode=debug
+      RestartSec=10s
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl enable --now hashtopolis.service
