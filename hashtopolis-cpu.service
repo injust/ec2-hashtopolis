@@ -1,0 +1,15 @@
+[Unit]
+Description=Hashtopolis CPU agent
+After=network.target
+
+[Service]
+RuntimeDirectory=hashtopolis-cpu
+WorkingDirectory=/run/hashtopolis-cpu
+ExecStartPre=sleep 30s
+ExecStartPre=curl $HASHTOPOLIS_SERVER/agents.php?download=1 -o hashtopolis.zip
+ExecStart=python3 hashtopolis.zip --voucher=$VOUCHER --url=$HASHTOPOLIS_SERVER/api/server.php --cpu-only
+ExecStopPost=python3 hashtopolis.zip --de-register
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
